@@ -1225,9 +1225,9 @@ svg {
     gap: 4rem;
   }
 }
-.about-text-content {
-  /* No specific styles needed */
-}
+/*.about-text-content {
+  /* No specific styles needed }*/
+
 .about-bio {
   font-size: 1rem;
   color: var(--text-secondary);
