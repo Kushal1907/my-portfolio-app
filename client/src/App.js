@@ -131,7 +131,7 @@ const Navbar = ({ theme, toggleTheme }) => {
               to="/"
               onClick={() => setIsMobileMenuOpen(false)}
               className="navbar-brand">
-              {/* ✨ CHANGED BACK TO CODE ICON ✨ */}
+              {/* Reverted to Code icon */}
               <Code size={28} className="navbar-brand-icon" />
               KUSHAL ARORA
             </Link>
@@ -183,17 +183,19 @@ const Navbar = ({ theme, toggleTheme }) => {
   );
 };
 
-// HeroSection Component
+// Enhanced HeroSection Component with Simplified Title
 const HeroSection = () => {
   const heroRef = useRef(null);
   const rotatingTexts = useMemo(
     () => ["I am a Frontend Developer", "I am a Full Stack Developer"],
     []
   );
+
   const [textArrayIndex, setTextArrayIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [currentTypedText, setCurrentTypedText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+
   const typingSpeed = 120;
   const deletingSpeed = 60;
   const pauseBeforeDelete = 2000;
@@ -202,6 +204,7 @@ const HeroSection = () => {
   useEffect(() => {
     let typeTimer;
     const currentPhraseToType = rotatingTexts[textArrayIndex];
+
     if (isDeleting) {
       if (charIndex > 0) {
         typeTimer = setTimeout(() => {
@@ -271,16 +274,11 @@ const HeroSection = () => {
       <Sparkles size={50} className="hero-bg-shape shape-2" />
       <Sparkles size={60} className="hero-bg-shape shape-3" />
       <div className="hero-content">
-        <h1 className="hero-title">
-          {"Welcome to My Portfolio".split("").map((char, index) => (
-            <span
-              key={index}
-              className="hero-title-char"
-              style={{ animationDelay: `${index * 0.05}s` }}>
-              {char === " " ? "\u00A0" : char}
-            </span>
-          ))}
+        {/* ✨ SIMPLIFIED HERO TITLE - Animation class added for consistency ✨ */}
+        <h1 className="section-title animate-fadeInUp">
+          WELCOME TO MY PORTFOLIO
         </h1>
+
         <p
           className="hero-rotating-text"
           style={{ animationDelay: "0.8s" }}
@@ -289,6 +287,7 @@ const HeroSection = () => {
           {currentTypedText}
           <span className="typing-cursor" aria-hidden="true"></span>
         </p>
+
         <p
           className="hero-subtitle animate-fadeInUp"
           style={{ animationDelay: "1.2s" }}>
@@ -354,8 +353,8 @@ const HomePage = () => (
   </div>
 );
 
-// ProjectCard, ProjectsPage, AboutPage components (remain unchanged)
-// ... (These components are the same as your last version)
+// ProjectCard, ProjectsPage, AboutPage, ContactPage, Footer, ScrollToTopButton components (remain unchanged)
+// ... (Assume these components are here and correct as per your last version)
 const ProjectCard = ({
   title,
   description,
@@ -422,7 +421,7 @@ const ProjectCard = ({
 const ProjectsPage = () => {
   const projects = [
     {
-      title: "PORTFOLIO WEBSITE",
+      title: "Portfolio Website",
       description:
         "A portfolio website is like an online résumé. Potential clients and hiring managers can easily find you online and check your previous projects and skills",
       imageUrl:
@@ -482,7 +481,7 @@ const ProjectsPage = () => {
 };
 
 const AboutPage = () => {
-  const initialBio = `Hello! I'm <strong>Kushal Arora</strong>, a passionate and creative <strong>Creative Frontend Developer</strong> based in The Digital Realm.<br/>I thrive on turning complex problems into elegant, user-friendly solutions. My journey in web development started with a fascination for how interactive digital experiences are built, and it has grown into a deep-seated passion.<br/>I specialize in React, Node.js, and modern JavaScript frameworks. I'm always eager to learn new technologies and methodologies to enhance my skill set and deliver cutting-edge results.<br/>When I'm not coding, you can find me exploring new tech, reading books, or working on personal creative projects.`;
+  const initialBio = `Hello! I'm <strong>Kushal Arora</strong>, a passionate and creative <strong>Creative Frontend Developer</strong> based in The Digital Realm.<br/>I thrive on turning complex problems into <strong>elegant, user-friendly solutions</strong>. My journey in web development started with a fascination for how interactive digital experiences are built, and it has grown into a deep-seated passion.<br/>I specialize in React, Node.js, and modern JavaScript frameworks. I'm always eager to learn new technologies and methodologies to enhance my skill set and deliver cutting-edge results.<br/>When I'm not coding, you can find me exploring new tech, reading books, or working on personal creative projects.`;
   const skills = [
     "React",
     "JavaScript (ES6+)",

@@ -213,20 +213,7 @@ svg {
     background-position: 0% 50%;
   }
 }
-@keyframes heroCharPopIn {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.8);
-  }
-  70% {
-    opacity: 1;
-    transform: translateY(-5px) scale(1.05);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
+/* @keyframes heroCharPopIn { 0% { opacity: 0; transform: translateY(20px) scale(0.8); } 70% { opacity: 1; transform: translateY(-5px) scale(1.05); } 100% { opacity: 1; transform: translateY(0) scale(1); } } */
 @keyframes float {
   0% {
     transform: translateY(0px) rotate(0deg);
@@ -408,8 +395,8 @@ svg {
 .navbar-brand-icon {
   margin-right: 0.5rem;
   width: 28px;
-  height: 28px; /* For SVG, color is inherited. For img, this ensures space. */
-  color: var(--border-accent); /* Original color for Code icon */
+  height: 28px;
+  color: var(--border-accent);
   transition: transform var(--transition-duration-medium)
     var(--ease-in-out-cubic);
 }
@@ -710,12 +697,11 @@ svg {
       var(--ease-in-out-cubic),
     transform var(--transition-duration-fast) var(--ease-in-out-cubic),
     text-shadow var(--transition-duration-fast) var(--ease-in-out-cubic);
+  white-space: nowrap; /* ✨ ADDED to keep title on one line ✨ */
+  /* transform: translateZ(0); /* Keep if it helps with blurriness on some devices */
+  /* backface-visibility: hidden; /* Keep if it helps with blurriness on some devices */
 }
-.hero-title-char {
-  display: inline-block;
-  opacity: 0;
-  animation: heroCharPopIn 0.6s var(--ease-out-quad) forwards;
-}
+/* .hero-title-char styles are removed as the animation is removed for this title */
 .hero-title:hover {
   background-position: 100% center;
   text-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
@@ -796,7 +782,8 @@ svg {
   }
 }
 
-/* General Button Styles and variants */
+/* General Button Styles and variants (Unchanged) */
+/* ... (Rest of the CSS is the same as the previous version) ... */
 .button {
   padding: 0.85rem 1.8rem;
   border-radius: 0.5rem;
@@ -1225,9 +1212,9 @@ svg {
     gap: 4rem;
   }
 }
-/*.about-text-content {
-  /* No specific styles needed }*/
-
+.about-text-content {
+  /* No specific styles needed */
+}
 .about-bio {
   font-size: 1rem;
   color: var(--text-secondary);
@@ -1728,6 +1715,10 @@ svg {
   .hero-title:hover {
     transform: none !important;
   }
+  /* .hero-title-char animation is handled by its class, which is covered by the general .animate-fadeInUp reset in prefers-reduced-motion if that's used, or its own keyframe if specific.
+     If hero-title-char has its own animation class, that class should be targeted here to set opacity: 1 and transform: none.
+     Since the JS now directly renders the h1 with .animate-fadeInUp, the general rule applies.
+  */
   .section-title:hover {
     transform: none !important;
   }
@@ -1739,6 +1730,6 @@ svg {
   }
   .typing-cursor {
     animation: none !important;
-    opacity: 1 !important; /* Ensure cursor is visible if animations are off */
+    opacity: 1 !important;
   }
 }
