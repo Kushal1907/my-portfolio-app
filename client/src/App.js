@@ -1,68 +1,72 @@
 import {
   ArrowUp,
   Briefcase,
+  CheckCircle,
   Code,
+  Facebook,
   Github,
-  Home,
+  Home as HomeIcon,
   Linkedin,
   Loader2,
   Mail,
+  MapPin,
   Menu,
   Moon,
+  Phone,
   Send,
+  Sparkles,
   Sun,
-  Twitter,
   User,
   X,
+  XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, Route, Routes, useLocation } from "react-router-dom";
 
 import "./App.css";
-
 import profilePhotoFromFile from "./Kushal Arora_Photo.jpg";
-
 import { sendContactMessage } from "./api";
+import ParticlesBackground from "./components/ParticlesBackground";
 
+// Utility Component to Scroll to Top on Navigation
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
+// Section Component
 const Section = ({ children, className = "", id }) => (
   <section id={id} className={`section ${className}`}>
     <div className="section-container"> {children}</div>
   </section>
 );
 
-const NavItem = ({
-  href,
-  page,
-  currentPage,
-  setCurrentPage,
-  children,
-  Icon,
-  isMobile,
-  closeMobileMenu,
-}) => (
-  <a
-    href={href}
-    onClick={(e) => {
-      e.preventDefault();
-      setCurrentPage(page);
-      if (isMobile && closeMobileMenu) {
-        closeMobileMenu();
-      }
-      setTimeout(() => {
-        const element = document.getElementById(page);
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth", block: "start" });
-        } else if (href === "#home" || page === "home") {
-          window.scrollTo({ top: 0, behavior: "smooth" });
+// NavItem Component
+const NavItem = ({ to, page, children, Icon, isMobile, closeMobileMenu }) => {
+  const location = useLocation();
+  const isActive =
+    location.pathname === to ||
+    (to === "/" && location.pathname.startsWith("/#"));
+  return (
+    <Link
+      to={to}
+      onClick={() => {
+        if (isMobile && closeMobileMenu) {
+          closeMobileMenu();
         }
-      }, 0);
-    }}
-    className={`nav-item ${
-      currentPage === page ? "nav-item-active" : "nav-item-default"
-    } ${isMobile ? "nav-item-mobile" : ""}`}>
-    {Icon && <Icon size={18} className="nav-item-icon" />}
-    {children}
-  </a>
-);
+      }}
+      className={`nav-item ${
+        isActive ? "nav-item-active" : "nav-item-default"
+      } ${isMobile ? "nav-item-mobile" : ""}`}
+      aria-current={isActive ? "page" : undefined}>
+      {Icon && <Icon size={18} className="nav-item-icon" />}
+      {children}
+    </Link>
+  );
+};
 
 // Theme Toggle Button Component
 const ThemeToggleButton = ({ theme, toggleTheme }) => (
@@ -72,73 +76,65 @@ const ThemeToggleButton = ({ theme, toggleTheme }) => (
     aria-label={
       theme === "light" ? "Switch to dark theme" : "Switch to light theme"
     }
-    title={theme === "light" ? "Switch to dark theme" : "Switch to light theme"} // Tooltip
-  >
+    title={
+      theme === "light" ? "Switch to dark theme" : "Switch to light theme"
+    }>
     {theme === "light" ? <Moon size={22} /> : <Sun size={22} />}
   </button>
 );
 
-const Navbar = ({ currentPage, setCurrentPage, theme, toggleTheme }) => {
+// Navbar Component
+const Navbar = ({ theme, toggleTheme }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-
   const navLinks = [
-    { href: "#home", page: "home", text: "Home", Icon: Home },
-    { href: "#projects", page: "projects", text: "Projects", Icon: Briefcase },
-    { href: "#about", page: "about", text: "About", Icon: User },
-    { href: "#contact", page: "contact", text: "Contact", Icon: Mail },
+    { to: "/", page: "home", text: "Home", Icon: HomeIcon },
+    { to: "/projects", page: "projects", text: "Projects", Icon: Briefcase },
+    { to: "/about", page: "about", text: "About", Icon: User },
+    { to: "/contact", page: "contact", text: "Contact", Icon: Mail },
   ];
-
-  // Effect for handling window resize and scroll events
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768 && isMobileMenuOpen) {
+    const handleEscKey = (event) => {
+      if (event.key === "Escape" && isMobileMenuOpen) {
         setIsMobileMenuOpen(false);
       }
     };
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20); // Navbar changes style after 20px scroll
+    document.addEventListener("keydown", handleEscKey);
+    return () => document.removeEventListener("keydown", handleEscKey);
+  }, [isMobileMenuOpen]);
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && isMobileMenuOpen)
+        setIsMobileMenuOpen(false);
     };
-
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("resize", handleResize);
     window.addEventListener("scroll", handleScroll);
-    // Initial check for scroll position on mount
     handleScroll();
-
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", handleScroll);
     };
   }, [isMobileMenuOpen]);
-
-  // Effect for preventing body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = isMobileMenuOpen ? "hidden" : "auto";
     return () => {
       document.body.style.overflow = "auto";
     };
   }, [isMobileMenuOpen]);
-
   return (
     <nav className={`navbar ${isScrolled ? "navbar-scrolled" : ""}`}>
       <div className="navbar-container">
         <div className="navbar-content">
           <div className="navbar-brand-section">
-            <a
-              href="#home"
-              onClick={(e) => {
-                e.preventDefault();
-                setCurrentPage("home");
-                setIsMobileMenuOpen(false);
-                setTimeout(
-                  () => window.scrollTo({ top: 0, behavior: "smooth" }),
-                  0
-                );
-              }}
+            <Link
+              to="/"
+              onClick={() => setIsMobileMenuOpen(false)}
               className="navbar-brand">
+              {/* ✨ CHANGED BACK TO CODE ICON ✨ */}
               <Code size={28} className="navbar-brand-icon" />
-              KUSHAL ARORA {/* Replace with your actual name/brand */}
-            </a>
+              KUSHAL ARORA
+            </Link>
           </div>
           <div className="navbar-links-desktop">
             <div className="navbar-links-list">
@@ -146,8 +142,7 @@ const Navbar = ({ currentPage, setCurrentPage, theme, toggleTheme }) => {
                 <NavItem
                   key={link.page}
                   {...link}
-                  currentPage={currentPage}
-                  setCurrentPage={setCurrentPage}
+                  closeMobileMenu={() => setIsMobileMenuOpen(false)}
                 />
               ))}
             </div>
@@ -160,22 +155,24 @@ const Navbar = ({ currentPage, setCurrentPage, theme, toggleTheme }) => {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className={`mobile-menu-button ${isMobileMenuOpen ? "open" : ""}`}
-              aria-label="Toggle mobile menu"
-              aria-expanded={isMobileMenuOpen}>
-              {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}{" "}
-              {/* Icon size matched CSS */}
+              aria-label={
+                isMobileMenuOpen ? "Close mobile menu" : "Open mobile menu"
+              }
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu-content">
+              {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
           </div>
         </div>
       </div>
-      <div className={`mobile-menu ${isMobileMenuOpen ? "open" : ""}`}>
+      <div
+        id="mobile-menu-content"
+        className={`mobile-menu ${isMobileMenuOpen ? "open" : ""}`}>
         <div className="mobile-menu-links">
           {navLinks.map((link) => (
             <NavItem
               key={link.page}
               {...link}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
               isMobile
               closeMobileMenu={() => setIsMobileMenuOpen(false)}
             />
@@ -186,35 +183,141 @@ const Navbar = ({ currentPage, setCurrentPage, theme, toggleTheme }) => {
   );
 };
 
-const HeroSection = ({ setCurrentPage }) => (
-  <div className="hero-section">
-    <div className="hero-content">
-      <h1 className="hero-title animate-fadeInUp stagger-delay-1">
-        Welcome to My Portfolio
-      </h1>
-      <p className="hero-subtitle animate-fadeInUp stagger-delay-2">
-        I'm a passionate developer creating modern and interactive web
-        experiences. Explore my work and get to know me better.
-      </p>
-      <div className="hero-buttons animate-fadeInUp stagger-delay-3">
-        <button
-          onClick={() => setCurrentPage("projects")}
-          className="button button-primary hero-button-work">
-          View My Work
-        </button>
-        <button
-          onClick={() => setCurrentPage("contact")}
-          className="button button-secondary hero-button-contact">
-          Get In Touch
-        </button>
+// HeroSection Component
+const HeroSection = () => {
+  const heroRef = useRef(null);
+  const rotatingTexts = useMemo(
+    () => ["I am a Frontend Developer", "I am a Full Stack Developer"],
+    []
+  );
+  const [textArrayIndex, setTextArrayIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [currentTypedText, setCurrentTypedText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const typingSpeed = 120;
+  const deletingSpeed = 60;
+  const pauseBeforeDelete = 2000;
+  const pauseBeforeTypingNext = 500;
+
+  useEffect(() => {
+    let typeTimer;
+    const currentPhraseToType = rotatingTexts[textArrayIndex];
+    if (isDeleting) {
+      if (charIndex > 0) {
+        typeTimer = setTimeout(() => {
+          setCurrentTypedText(currentPhraseToType.substring(0, charIndex - 1));
+          setCharIndex(charIndex - 1);
+        }, deletingSpeed);
+      } else {
+        setIsDeleting(false);
+        setTextArrayIndex(
+          (prevIndex) => (prevIndex + 1) % rotatingTexts.length
+        );
+        typeTimer = setTimeout(() => {}, pauseBeforeTypingNext);
+      }
+    } else {
+      if (charIndex < currentPhraseToType.length) {
+        typeTimer = setTimeout(() => {
+          setCurrentTypedText(currentPhraseToType.substring(0, charIndex + 1));
+          setCharIndex(charIndex + 1);
+        }, typingSpeed);
+      } else {
+        typeTimer = setTimeout(() => {
+          setIsDeleting(true);
+        }, pauseBeforeDelete);
+      }
+    }
+    return () => clearTimeout(typeTimer);
+  }, [
+    charIndex,
+    isDeleting,
+    textArrayIndex,
+    rotatingTexts,
+    typingSpeed,
+    deletingSpeed,
+    pauseBeforeDelete,
+    pauseBeforeTypingNext,
+  ]);
+
+  useEffect(() => {
+    const handleMouseMove = (event) => {
+      if (
+        !heroRef.current ||
+        !window.matchMedia("(prefers-reduced-motion: no-preference)").matches
+      )
+        return;
+      const { clientX, clientY } = event;
+      const { offsetWidth, offsetHeight } = heroRef.current;
+      const xPos = (clientX / offsetWidth - 0.5) * 30;
+      const yPos = (clientY / offsetHeight - 0.5) * 30;
+      const shapes = heroRef.current.querySelectorAll(".hero-bg-shape");
+      shapes.forEach((shape, index) => {
+        const factor = (index + 1) * 0.2 + 1;
+        shape.style.transform = `translate(${xPos / factor}px, ${
+          yPos / factor
+        }px)`;
+      });
+    };
+    const currentHeroRef = heroRef.current;
+    currentHeroRef?.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      currentHeroRef?.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
+  return (
+    <div className="hero-section" ref={heroRef}>
+      <Sparkles size={80} className="hero-bg-shape shape-1" />
+      <Sparkles size={50} className="hero-bg-shape shape-2" />
+      <Sparkles size={60} className="hero-bg-shape shape-3" />
+      <div className="hero-content">
+        <h1 className="hero-title">
+          {"Welcome to My Portfolio".split("").map((char, index) => (
+            <span
+              key={index}
+              className="hero-title-char"
+              style={{ animationDelay: `${index * 0.05}s` }}>
+              {char === " " ? "\u00A0" : char}
+            </span>
+          ))}
+        </h1>
+        <p
+          className="hero-rotating-text"
+          style={{ animationDelay: "0.8s" }}
+          aria-live="polite"
+          aria-label={`Role: ${currentTypedText}`}>
+          {currentTypedText}
+          <span className="typing-cursor" aria-hidden="true"></span>
+        </p>
+        <p
+          className="hero-subtitle animate-fadeInUp"
+          style={{ animationDelay: "1.2s" }}>
+          I'm a passionate developer creating modern and interactive web
+          experiences. Explore my work and get to know me better.
+        </p>
+        <div
+          className="hero-buttons animate-fadeInUp"
+          style={{ animationDelay: "1.7s" }}>
+          <Link
+            to="/projects"
+            className="button button-primary hero-button-work">
+            View My Work
+          </Link>
+          <Link
+            to="/contact"
+            className="button button-secondary hero-button-contact">
+            Get In Touch
+          </Link>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
-const HomePage = ({ setCurrentPage }) => (
-  <div id="home">
-    <HeroSection setCurrentPage={setCurrentPage} />
+// HomePage Component
+const HomePage = () => (
+  <div>
+    <HeroSection />
     <Section className="home-services-section" id="services">
       <h2 className="section-title animate-fadeInUp">What I Do</h2>
       <div className="services-grid stagger-children">
@@ -232,7 +335,7 @@ const HomePage = ({ setCurrentPage }) => (
             animClass: "animate-zoomIn stagger-delay-2",
           },
           {
-            icon: Code,
+            icon: Briefcase,
             title: "Interactive Experiences",
             desc: "Building interactive elements and animations to bring designs to life.",
             animClass: "animate-zoomIn stagger-delay-3",
@@ -251,6 +354,8 @@ const HomePage = ({ setCurrentPage }) => (
   </div>
 );
 
+// ProjectCard, ProjectsPage, AboutPage components (remain unchanged)
+// ... (These components are the same as your last version)
 const ProjectCard = ({
   title,
   description,
@@ -297,7 +402,7 @@ const ProjectCard = ({
             target="_blank"
             rel="noopener noreferrer"
             className="project-card-link project-card-link-live">
-            Live Demo <Home size={16} className="link-icon" />
+            Live Demo <HomeIcon size={16} className="link-icon" />
           </a>
         )}
         {repoLink && (
@@ -317,14 +422,14 @@ const ProjectCard = ({
 const ProjectsPage = () => {
   const projects = [
     {
-      title: "Portfoilio Website",
+      title: "PORTFOLIO WEBSITE",
       description:
         "A portfolio website is like an online résumé. Potential clients and hiring managers can easily find you online and check your previous projects and skills",
       imageUrl:
         "https://images.unsplash.com/photo-1522199755839-a2bacb67c546?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGUtY29tbWVyY2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
       techStack: ["React", "Node.js", "Express", "MongoDB"],
       liveLink: "#",
-      repoLink: "#",
+      repoLink: "https://github.com/Kushal1907/my-portfolio-app",
     },
     {
       title: "MERN CHAT APP",
@@ -332,7 +437,7 @@ const ProjectsPage = () => {
       imageUrl:
         "https://images.unsplash.com/photo-1517048676732-d65bc937f952?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8dGFzayUyMG1hbmFnZW1lbnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
       techStack: ["MongoDB", "Express", "React", "Node.js"],
-      liveLink: "#",
+      liveLink: "https://github.com/Kushal1907/Mern-Chat-App",
       repoLink: "https://github.com/Kushal1907/Mern-Chat-App",
     },
     {
@@ -342,7 +447,7 @@ const ProjectsPage = () => {
       imageUrl:
         "https://images.unsplash.com/photo-1487017159836-4e23ece2e4cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8cG9ydGZvbGlvfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
       techStack: ["AI", "Machine Learning", "Python"],
-      liveLink: "#",
+      liveLink: "https://github.com/Kushal1907/SIGN-LANGUAGE-CONVERTOR",
       repoLink: "https://github.com/Kushal1907/SIGN-LANGUAGE-CONVERTOR",
     },
     {
@@ -352,7 +457,8 @@ const ProjectsPage = () => {
       imageUrl:
         "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZGF0YSUyMHZpc3VhbGl6YXRpb258ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
       techStack: ["HTML5", "CSS3", "JS", "REACT", "Node.js", "SQL"],
-      liveLink: "#",
+      liveLink:
+        "https://github.com/Kushal1907/Student-Database-Management-System",
       repoLink:
         "https://github.com/Kushal1907/Student-Database-Management-System",
     },
@@ -376,37 +482,30 @@ const ProjectsPage = () => {
 };
 
 const AboutPage = () => {
-  const initialBio = `Hello! I'm <strong>Kushal Arora</strong>, a passionate and creative <strong>Creative Frontend Developer</strong> based in <strong>The Digital Realm</strong>.<br/>I thrive on turning complex problems into <strong>elegant, user-friendly solutions</strong>. My journey in web development started with a fascination for how interactive digital experiences are built, and it has grown into a deep-seated passion.<br/>I specialize in <strong>React, Node.js, and modern JavaScript frameworks</strong>. I'm always eager to learn new technologies and methodologies to enhance my skill set and deliver cutting-edge results.<br/>When I'm not coding, you can find me exploring new tech, reading books, or working on personal creative projects.`;
+  const initialBio = `Hello! I'm <strong>Kushal Arora</strong>, a passionate and creative <strong>Creative Frontend Developer</strong> based in The Digital Realm.<br/>I thrive on turning complex problems into elegant, user-friendly solutions. My journey in web development started with a fascination for how interactive digital experiences are built, and it has grown into a deep-seated passion.<br/>I specialize in React, Node.js, and modern JavaScript frameworks. I'm always eager to learn new technologies and methodologies to enhance my skill set and deliver cutting-edge results.<br/>When I'm not coding, you can find me exploring new tech, reading books, or working on personal creative projects.`;
   const skills = [
     "React",
     "JavaScript (ES6+)",
-    "TypeScript",
     "Node.js & Express",
     "MongoDB & SQL",
     "HTML5 & CSS3",
-    "TailwindCSS & SCSS",
+    "TailwindCSS",
     "Git & GitHub Actions",
-    "REST & GraphQL APIs",
     "UI/UX Principles",
     "Responsive Design",
-    "Framer Motion",
   ];
-
-  // Fallback image URL if the imported image fails or for default
   const fallbackPhotoUrl =
     "https://placehold.co/400x480/1e293b/94a3b8?text=Kushal+Arora";
-
   return (
     <Section id="about" className="about-section">
       <h2 className="section-title animate-fadeInUp">About Me</h2>
       <div className="about-grid">
         <div className="about-image-container animate-fadeInLeft stagger-delay-1">
           <img
-            src={profilePhotoFromFile || fallbackPhotoUrl} // Use imported image, fallback if needed
-            alt="Kushal Arora"
+            src={profilePhotoFromFile || fallbackPhotoUrl}
+            alt="Kushal Arora, a creative frontend developer."
             className="about-image"
             onError={(e) => {
-              // If the imported image also fails (e.g., path issue in build), use a generic placeholder
               e.target.src = `https://placehold.co/400x480/1e293b/94a3b8?text=Photo+Error`;
             }}
             loading="lazy"
@@ -442,110 +541,162 @@ const ContactPage = () => {
     message: "",
   });
   const [isSending, setIsSending] = useState(false);
-  const [responseMsg, setResponseMsg] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
-  const handleChange = (e) => {
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState("success");
+  const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSending(true);
-    setResponseMsg("");
-    setErrorMsg("");
+    setShowToast(false);
     try {
       const response = await sendContactMessage(formData);
-      setResponseMsg(
-        response.data.msg || "Message sent successfully! I'll be in touch soon."
-      );
+      const successMessage =
+        response.data.msg ||
+        "Message sent successfully! I'll be in touch soon.";
+      setToastType("success");
+      setToastMessage(successMessage);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 4000);
       setFormData({ name: "", email: "", message: "" });
     } catch (err) {
       console.error(
         "Contact form submission error:",
         err.response || err.message || err
       );
-      setErrorMsg(
+      const errorMessage =
         err.response?.data?.msg ||
-          "Oops! Something went wrong. Please try again or contact me directly."
-      );
+        "Oops! Something went wrong. Please try again.";
+      setToastType("error");
+      setToastMessage(errorMessage);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 6000);
     }
     setIsSending(false);
   };
   return (
-    <Section id="contact" className="contact-section">
-      <h2 className="section-title animate-fadeInUp">Get In Touch</h2>
-      <div className="contact-form-container animate-zoomIn stagger-delay-1">
-        <p className="contact-intro-text">
-          Have a project in mind, a question, or just want to say hi? Feel free
-          to reach out!
-        </p>
-        <form className="contact-form" onSubmit={handleSubmit}>
-          <div className="form-group animate-fadeInUp stagger-delay-2">
-            <label htmlFor="name" className="form-label">
-              Full Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              id="name"
-              className="form-input"
-              placeholder="Your Name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
+    <>
+      {showToast && (
+        <div
+          className={`toast-notification show ${toastType}`}
+          role={toastType === "error" ? "alert" : "status"}>
+          {toastType === "success" ? (
+            <CheckCircle size={20} className="toast-icon" />
+          ) : (
+            <XCircle size={20} className="toast-icon" />
+          )}
+          {toastMessage}
+          <button
+            onClick={() => setShowToast(false)}
+            className="toast-close-button"
+            aria-label="Close notification">
+            <X size={18} />
+          </button>
+        </div>
+      )}
+      <Section id="contact" className="contact-section">
+        <h2 className="section-title animate-fadeInUp">Get In Touch</h2>
+        <div className="contact-content-grid animate-fadeInUp stagger-delay-1">
+          <div className="contact-details">
+            <h3 className="contact-details-heading">Reach Me Directly</h3>
+            <p
+              className="contact-intro-text"
+              style={{ textAlign: "left", marginBottom: "1.5rem" }}>
+              I'm always open to discussing new projects, creative ideas, or
+              opportunities. Feel free to reach out via email or phone.
+            </p>
+            <ul className="contact-info-list">
+              <li>
+                <Mail size={20} className="contact-info-icon" />
+                <a href="mailto:kusharora19072001@gmail.com">
+                  kusharora19072001@gmail.com
+                </a>
+              </li>
+              <li>
+                <Phone size={20} className="contact-info-icon" />
+                <a href="tel:+919817864314">+91 9817864314</a>
+              </li>
+              <li>
+                <MapPin size={20} className="contact-info-icon" />
+                <span>Ambala, Haryana, India</span>
+              </li>
+            </ul>
+            <p className="contact-page-form-cta">
+              Or, use the form to send a message:
+            </p>
           </div>
-          <div className="form-group animate-fadeInUp stagger-delay-3">
-            <label htmlFor="email" className="form-label">
-              Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              className="form-input"
-              placeholder="you@example.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+          <div className="contact-form-wrapper">
+            <div className="contact-form-container">
+              <form className="contact-form" onSubmit={handleSubmit}>
+                <div className="form-group animate-fadeInUp stagger-delay-2">
+                  <label htmlFor="name" className="form-label">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    className="form-input"
+                    placeholder="Your Name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="form-group animate-fadeInUp stagger-delay-3">
+                  <label htmlFor="email" className="form-label">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    className="form-input"
+                    placeholder="you@example.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="form-group animate-fadeInUp stagger-delay-4">
+                  <label htmlFor="message" className="form-label">
+                    Message
+                  </label>
+                  <textarea
+                    name="message"
+                    id="message"
+                    rows="5"
+                    className="form-textarea"
+                    placeholder="Let's build something amazing..."
+                    value={formData.message}
+                    onChange={handleChange}
+                    required></textarea>
+                </div>
+                <div className="animate-fadeInUp stagger-delay-5">
+                  <button
+                    type="submit"
+                    className={`button button-submit contact-submit-button ${
+                      isSending ? "sending" : ""
+                    }`}
+                    disabled={isSending}>
+                    {isSending ? (
+                      <Loader2
+                        size={20}
+                        className="animate-spin button-icon-leading"
+                      />
+                    ) : (
+                      <Send size={20} className="button-icon-leading" />
+                    )}
+                    {isSending ? "Sending..." : "Send Message"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-          <div className="form-group animate-fadeInUp stagger-delay-4">
-            <label htmlFor="message" className="form-label">
-              Message
-            </label>
-            <textarea
-              name="message"
-              id="message"
-              rows="5"
-              className="form-textarea"
-              placeholder="Let's build something amazing..."
-              value={formData.message}
-              onChange={handleChange}
-              required></textarea>
-          </div>
-          {responseMsg && <p className="form-success-message">{responseMsg}</p>}
-          {errorMsg && <p className="form-error-message">{errorMsg}</p>}
-          <div className="animate-fadeInUp stagger-delay-5">
-            <button
-              type="submit"
-              className={`button button-submit contact-submit-button ${
-                isSending ? "sending" : ""
-              }`}
-              disabled={isSending}>
-              {isSending ? (
-                <Loader2
-                  size={20}
-                  className="animate-spin button-icon-leading"
-                />
-              ) : (
-                <Send size={20} className="button-icon-leading" />
-              )}
-              {isSending ? "Sending..." : "Send Message"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </Section>
+        </div>
+      </Section>
+    </>
   );
 };
 
@@ -557,17 +708,17 @@ const Footer = () => (
           {
             href: "https://github.com/Kushal1907",
             icon: Github,
-            label: "GitHub",
+            label: "GitHub profile of Kushal Arora",
           },
           {
             href: "https://www.linkedin.com/in/kushal1907/",
             icon: Linkedin,
-            label: "LinkedIn",
+            label: "LinkedIn profile of Kushal Arora",
           },
           {
-            href: "https://twitter.com/yourusername", // Replace with your actual Twitter
-            icon: Twitter,
-            label: "Twitter",
+            href: "https://www.facebook.com/yourfacebookusername",
+            icon: Facebook,
+            label: "Facebook profile of Kushal Arora",
           },
         ].map((social, index) => (
           <a
@@ -578,7 +729,7 @@ const Footer = () => (
             className={`social-link animate-fadeInUp stagger-delay-${
               index + 1
             }`}
-            aria-label={`Visit my ${social.label} profile`}>
+            aria-label={social.label}>
             <social.icon />
           </a>
         ))}
@@ -593,122 +744,78 @@ const Footer = () => (
   </footer>
 );
 
-// Scroll to Top Button Component
 const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
-
-  // Show button when page is scrolled down
-  const toggleVisibility = () => {
-    if (window.pageYOffset > 300) {
-      // Adjust this value as needed
-      setIsVisible(true);
-    } else {
-      setIsVisible(false);
-    }
-  };
-
-  // Set up scroll event listener
+  const toggleVisibility = useCallback(() => {
+    if (window.pageYOffset > 300) setIsVisible(true);
+    else setIsVisible(false);
+  }, []);
   useEffect(() => {
     window.addEventListener("scroll", toggleVisibility);
     return () => window.removeEventListener("scroll", toggleVisibility);
-  }, []);
-
-  // Smooth scroll to top
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
+  }, [toggleVisibility]);
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
   return (
     <button
       type="button"
       onClick={scrollToTop}
       className={`scroll-to-top ${isVisible ? "visible" : ""}`}
       aria-label="Scroll to top"
-      title="Scroll to top" // Tooltip
-    >
+      title="Scroll to top">
       <ArrowUp size={24} />
     </button>
   );
 };
 
+// Main App Component
 function App() {
-  const [currentPage, setCurrentPage] = useState("home");
-  // Theme state: try to load from localStorage, default to 'dark'
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem("theme");
     return savedTheme || "dark";
   });
-
-  // Effect to apply theme to HTML element and save to localStorage
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
-
-  // Function to toggle theme
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
   };
-
-  // Effect for scrolling to top on page change (if not a hash link navigation)
-  useEffect(() => {
-    const currentHash = window.location.hash.substring(1);
-    if (currentHash !== currentPage && currentPage === "home") {
-      window.scrollTo(0, 0);
-    } else if (currentHash !== currentPage && !currentHash) {
-      window.scrollTo(0, 0);
-    }
-  }, [currentPage]);
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case "home":
-        return (
-          <div key="home">
-            <HomePage setCurrentPage={setCurrentPage} />
-          </div>
-        );
-      case "projects":
-        return (
-          <div key="projects">
-            <ProjectsPage />
-          </div>
-        );
-      case "about":
-        return (
-          <div key="about">
-            <AboutPage />
-          </div>
-        );
-      case "contact":
-        return (
-          <div key="contact">
-            <ContactPage />
-          </div>
-        );
-      default:
-        return (
-          <div key="defaultHome">
-            <HomePage setCurrentPage={setCurrentPage} />
-          </div>
-        );
-    }
-  };
-
   return (
     <div className="app-container">
-      <Navbar
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        theme={theme}
-        toggleTheme={toggleTheme}
-      />
-      <main className="main-content">{renderPage()}</main>
+      <a href="#main-content" className="skip-link">
+        Skip to Main Content
+      </a>
+      <ParticlesBackground theme={theme} />
+      <ScrollToTop />
+      <Navbar theme={theme} toggleTheme={toggleTheme} />
+      <main id="main-content" className="main-content">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route
+            path="*"
+            element={
+              <Section
+                id="not-found"
+                className="not-found-section"
+                style={{ textAlign: "center", padding: "5rem 1rem" }}>
+                <h2>404 - Page Not Found</h2>
+                <p>The page you are looking for does not exist.</p>
+                <Link
+                  to="/"
+                  className="button button-primary"
+                  style={{ marginTop: "1.5rem" }}>
+                  Go to Homepage
+                </Link>
+              </Section>
+            }
+          />
+        </Routes>
+      </main>
       <Footer />
-      <ScrollToTopButton /> {/* Add the scroll to top button here */}
+      <ScrollToTopButton />
     </div>
   );
 }
