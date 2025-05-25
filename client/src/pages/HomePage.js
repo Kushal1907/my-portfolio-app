@@ -1,13 +1,67 @@
 import { Briefcase, Sparkles, User } from "lucide-react"; // Import icons used here
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Section } from "../App"; // Assuming Section is exported from App.js or a common components file
 
 // Enhanced HeroSection Component with Typed Text Animation
 const HeroSection = () => {
   const heroRef = useRef(null);
+  const rotatingTexts = useMemo(
+    () => ["I'm a Frontend Developer", "I'm a Full Stack Developer"],
+    []
+  );
 
-  // Subtle parallax effect for background shapes (can remain)
+  const [textArrayIndex, setTextArrayIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [currentTypedText, setCurrentTypedText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const typingSpeed = 120;
+  const deletingSpeed = 60;
+  const pauseBeforeDelete = 2000;
+  const pauseBeforeTypingNext = 500;
+
+  useEffect(() => {
+    let typeTimer;
+    const currentPhraseToType = rotatingTexts[textArrayIndex];
+
+    if (isDeleting) {
+      if (charIndex > 0) {
+        typeTimer = setTimeout(() => {
+          setCurrentTypedText(currentPhraseToType.substring(0, charIndex - 1));
+          setCharIndex(charIndex - 1);
+        }, deletingSpeed);
+      } else {
+        setIsDeleting(false);
+        setTextArrayIndex(
+          (prevIndex) => (prevIndex + 1) % rotatingTexts.length
+        );
+        typeTimer = setTimeout(() => {}, pauseBeforeTypingNext);
+      }
+    } else {
+      if (charIndex < currentPhraseToType.length) {
+        typeTimer = setTimeout(() => {
+          setCurrentTypedText(currentPhraseToType.substring(0, charIndex + 1));
+          setCharIndex(charIndex + 1);
+        }, typingSpeed);
+      } else {
+        typeTimer = setTimeout(() => {
+          setIsDeleting(true);
+        }, pauseBeforeDelete);
+      }
+    }
+    return () => clearTimeout(typeTimer);
+  }, [
+    charIndex,
+    isDeleting,
+    textArrayIndex,
+    rotatingTexts,
+    typingSpeed,
+    deletingSpeed,
+    pauseBeforeDelete,
+    pauseBeforeTypingNext,
+  ]);
+
   useEffect(() => {
     const handleMouseMove = (event) => {
       if (
@@ -45,16 +99,14 @@ const HeroSection = () => {
           style={{ animationDelay: "0.2s" }}>
           WELCOME TO MY PORTFOLIO
         </h1>
-
-        {/* ✨ STATIC ROLE TEXTS ✨ */}
-        <div className="hero-roles">
-          <p
-            className="hero-role-text animate-fadeInUp"
-            style={{ animationDelay: "0.6s" }}>
-            I am a Frontend Developer
-          </p>
-        </div>
-
+        <p
+          className="hero-rotating-text"
+          style={{ animationDelay: "0.8s" }}
+          aria-live="polite"
+          aria-label={`Role: ${currentTypedText}`}>
+          {currentTypedText}
+          <span className="typing-cursor" aria-hidden="true"></span>
+        </p>
         <p
           className="hero-subtitle animate-fadeInUp"
           style={{ animationDelay: "1.2s" }}>
