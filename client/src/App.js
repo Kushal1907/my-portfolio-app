@@ -62,8 +62,9 @@ const NavItem = ({ to, page, children, Icon, isMobile, closeMobileMenu }) => {
       className={`nav-item ${
         isActive ? "nav-item-active" : "nav-item-default"
       } ${isMobile ? "nav-item-mobile" : ""}`}
-      aria-current={isActive ? "page" : undefined}>
-      {Icon && <Icon size={18} className="nav-item-icon" />}
+      aria-current={isActive ? "page" : undefined}
+      aria-label={typeof children === "string" ? children : undefined}>
+      {Icon && <Icon size={18} className="nav-item-icon" aria-hidden="true" />}
       {children}
     </Link>
   );
