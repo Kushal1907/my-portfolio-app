@@ -187,7 +187,7 @@ const Navbar = ({ theme, toggleTheme }) => {
 const HeroSection = () => {
   const heroRef = useRef(null);
   const rotatingTexts = useMemo(
-    () => ["I am a Frontend Developer", "I am a Full Stack Developer"],
+    () => ["I'm a Frontend Developer", "I'm a Full Stack Developer"],
     []
   );
 
