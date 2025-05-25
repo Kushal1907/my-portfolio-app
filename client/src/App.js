@@ -200,7 +200,7 @@ const Footer = () => (
             label: "LinkedIn profile of Kushal Arora",
           },
           {
-            href: "https://www.facebook.com/yourfacebookusername",
+            href: "https://www.facebook.com/kushal.choudary.10/",
             icon: Facebook,
             label: "Facebook profile of Kushal Arora",
           },

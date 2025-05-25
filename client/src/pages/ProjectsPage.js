@@ -68,13 +68,13 @@ const ProjectCard = ({
 const ProjectsPage = () => {
   const projects = [
     {
-      title: "Portfolio Website",
+      title: "PORTFOLIO WEBSITE",
       description:
-        "A portfolio website is like an online résumé. Potential clients and hiring managers can easily find you online and check your previous projects and skills",
+        "A portfolio website is like an online resume. Potential clients and hiring managers can easily find you online and check your previous projects and skills",
       imageUrl:
         "https://images.unsplash.com/photo-1522199755839-a2bacb67c546?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGUtY29tbWVyY2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
       techStack: ["React", "Node.js", "Express", "MongoDB"],
-      liveLink: "#",
+      liveLink: "https://kushal-arora-portfolio.onrender.com",
       repoLink: "https://github.com/Kushal1907/my-portfolio-app",
     },
     {

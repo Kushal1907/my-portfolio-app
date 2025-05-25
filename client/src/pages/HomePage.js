@@ -7,7 +7,7 @@ import { Section } from "../App"; // Assuming Section is exported from App.js or
 const HeroSection = () => {
   const heroRef = useRef(null);
   const rotatingTexts = useMemo(
-    () => ["I am a Frontend Developer", "I am a Full Stack Developer"],
+    () => ["I'm a Frontend Developer", "I'm a Full Stack Developer"],
     []
   );
 
@@ -97,7 +97,7 @@ const HeroSection = () => {
         <h1
           className="section-title animate-fadeInUp"
           style={{ animationDelay: "0.2s" }}>
-          Welcome to My Portfolio
+          WELCOME TO MY PORTFOLIO
         </h1>
         <p
           className="hero-rotating-text"
