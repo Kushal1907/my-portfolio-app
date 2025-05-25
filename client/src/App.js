@@ -50,7 +50,15 @@ const NavItem = ({ to, page, children, Icon, isMobile, closeMobileMenu }) => {
   const location = useLocation();
   const isActive =
     location.pathname === to ||
-    (to === "/" && location.pathname.startsWith("/#"));
+    location.pathname === to ||
+    location.pathname.startsWith(`${to}/`);
+  const classNames = [
+    "nav-item",
+    isActive ? "nav-item-active" : "nav-item-default",
+    isMobile && "nav-item-mobile",
+  ]
+    .filter(Boolean)
+    .join(" ");
   return (
     <Link
       to={to}
@@ -59,9 +67,7 @@ const NavItem = ({ to, page, children, Icon, isMobile, closeMobileMenu }) => {
           closeMobileMenu();
         }
       }}
-      className={`nav-item ${
-        isActive ? "nav-item-active" : "nav-item-default"
-      } ${isMobile ? "nav-item-mobile" : ""}`}
+      className={classNames}
       aria-current={isActive ? "page" : undefined}
       aria-label={typeof children === "string" ? children : undefined}>
       {Icon && <Icon size={18} className="nav-item-icon" aria-hidden="true" />}
