@@ -618,7 +618,7 @@ svg {
 /* Hero Section */
 .hero-section {
   min-height: calc(100vh - 4.5rem);
-  height: calc(
+  /*height: calc(
     100vh - 4.5rem
   ); /* Explicit height to potentially stabilize CLS */
   display: flex;
