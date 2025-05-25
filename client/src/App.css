@@ -3,9 +3,9 @@
 /* Global Resets and Base Styles */
 :root {
   /* Dark Theme (Updated Palette) */
-  --bg-primary: #1a1d24; /* Deeper, slightly desaturated dark blue/grey */
-  --bg-secondary: #232730; /* Slightly lighter than primary */
-  --bg-tertiary: #16191f; /* Even darker for certain sections */
+  --bg-primary: #1a1d24;
+  --bg-secondary: #232730;
+  --bg-tertiary: #16191f;
   --bg-card: #1e293b;
   --bg-navbar: rgba(26, 29, 36, 0.8);
   --bg-navbar-scrolled: rgba(26, 29, 36, 0.95);
@@ -88,6 +88,7 @@
 
 html {
   scroll-behavior: smooth;
+  height: 100%; /* Helps stabilize vh units and layout calculations */
 }
 
 body {
@@ -113,6 +114,7 @@ body {
     color var(--transition-duration-medium) var(--ease-in-out-cubic);
   position: relative;
   z-index: 0;
+  min-height: 100%; /* Ensure body tries to fill html height */
 }
 
 img,
@@ -202,18 +204,21 @@ svg {
     transform: rotate(360deg);
   }
 }
-@keyframes gradientText {
+/* @keyframes gradientText removed as it's no longer used by hero/section titles */
+@keyframes heroCharPopIn {
   0% {
-    background-position: 0% 50%;
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
   }
-  50% {
-    background-position: 100% 50%;
+  70% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.05);
   }
   100% {
-    background-position: 0% 50%;
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
-/* @keyframes heroCharPopIn { 0% { opacity: 0; transform: translateY(20px) scale(0.8); } 70% { opacity: 1; transform: translateY(-5px) scale(1.05); } 100% { opacity: 1; transform: translateY(0) scale(1); } } */
 @keyframes float {
   0% {
     transform: translateY(0px) rotate(0deg);
@@ -394,8 +399,6 @@ svg {
 }
 .navbar-brand-icon {
   margin-right: 0.5rem;
-  width: 28px;
-  height: 28px;
   color: var(--border-accent);
   transition: transform var(--transition-duration-medium)
     var(--ease-in-out-cubic);
@@ -615,6 +618,9 @@ svg {
 /* Hero Section */
 .hero-section {
   min-height: calc(100vh - 4.5rem);
+  height: calc(
+    100vh - 4.5rem
+  ); /* Explicit height to potentially stabilize CLS */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -674,38 +680,7 @@ svg {
   position: relative;
   z-index: 1;
 }
-.hero-title {
-  font-size: 2.5rem;
-  line-height: 1.15;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin-bottom: 1rem;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  background-image: linear-gradient(
-    to right,
-    var(--text-gradient-start),
-    var(--text-gradient-mid),
-    var(--text-gradient-end),
-    var(--text-gradient-mid)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  background-size: 200% auto;
-  background-position: 0% center;
-  transition: background-position var(--transition-duration-medium)
-      var(--ease-in-out-cubic),
-    transform var(--transition-duration-fast) var(--ease-in-out-cubic),
-    text-shadow var(--transition-duration-fast) var(--ease-in-out-cubic);
-  white-space: nowrap; /* ✨ ADDED to keep title on one line ✨ */
-  /* transform: translateZ(0); /* Keep if it helps with blurriness on some devices */
-  /* backface-visibility: hidden; /* Keep if it helps with blurriness on some devices */
-}
-/* .hero-title-char styles are removed as the animation is removed for this title */
-.hero-title:hover {
-  background-position: 100% center;
-  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
-}
+/* Hero title now uses .section-title for base styling, and .animate-fadeInUp for entrance */
 .hero-rotating-text {
   font-size: 1.5rem;
   font-weight: 600;
@@ -764,10 +739,7 @@ svg {
   .hero-section {
     padding: 4rem 1rem;
   }
-  .hero-title {
-    font-size: 4.25rem;
-    margin-bottom: 1.5rem;
-  }
+  /* Hero title sizing will come from .section-title's media query */
   .hero-rotating-text {
     font-size: 2rem;
     min-height: 3em;
@@ -782,8 +754,7 @@ svg {
   }
 }
 
-/* General Button Styles and variants (Unchanged) */
-/* ... (Rest of the CSS is the same as the previous version) ... */
+/* General Button Styles and variants */
 .button {
   padding: 0.85rem 1.8rem;
   border-radius: 0.5rem;
@@ -891,6 +862,7 @@ svg {
   transition: background-position var(--transition-duration-medium)
       var(--ease-in-out-cubic),
     transform var(--transition-duration-fast) var(--ease-in-out-cubic);
+  white-space: nowrap;
 }
 .section-title:hover {
   background-position: 100% center;
@@ -1716,7 +1688,6 @@ svg {
     transform: none !important;
   }
   /* .hero-title-char animation is handled by its class, which is covered by the general .animate-fadeInUp reset in prefers-reduced-motion if that's used, or its own keyframe if specific.
-     If hero-title-char has its own animation class, that class should be targeted here to set opacity: 1 and transform: none.
      Since the JS now directly renders the h1 with .animate-fadeInUp, the general rule applies.
   */
   .section-title:hover {

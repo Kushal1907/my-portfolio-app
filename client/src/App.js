@@ -1,32 +1,33 @@
 import {
   ArrowUp,
-  Briefcase,
-  CheckCircle,
+  Briefcase, // Used in HeroSection (will be in HomePage.js)
   Code,
-  Facebook,
+  Facebook, // Used in NavLinks
   Github,
   Home as HomeIcon,
   Linkedin,
-  Loader2,
-  Mail,
-  MapPin,
+  Loader2, // Used in ContactPage (will be in its own file)
+  Mail, // Used in NavLinks
   Menu,
-  Moon,
-  Phone,
-  Send,
-  Sparkles,
+  Moon, // Used in ContactPage (will be in its own file)
   Sun,
-  User,
+  User, // Used in NavLinks
   X,
-  XCircle,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useState } from "react";
 import { Link, Route, Routes, useLocation } from "react-router-dom";
 
 import "./App.css";
-import profilePhotoFromFile from "./Kushal Arora_Photo.jpg";
-import { sendContactMessage } from "./api";
-import ParticlesBackground from "./components/ParticlesBackground";
+// profilePhotoFromFile and sendContactMessage will be used within their respective page components
+// import profilePhotoFromFile from "./Kushal Arora_Photo.jpg"; // Moved to AboutPage.js
+// import { sendContactMessage } from "./api"; // Moved to ContactPage.js
+import ParticlesBackground from "./components/ParticlesBackground"; // Assuming this path is correct
+
+// Lazy load page components
+const HomePage = React.lazy(() => import("./pages/HomePage"));
+const ProjectsPage = React.lazy(() => import("./pages/ProjectsPage"));
+const AboutPage = React.lazy(() => import("./pages/AboutPage"));
+const ContactPage = React.lazy(() => import("./pages/ContactPage"));
 
 // Utility Component to Scroll to Top on Navigation
 const ScrollToTop = () => {
@@ -37,8 +38,8 @@ const ScrollToTop = () => {
   return null;
 };
 
-// Section Component
-const Section = ({ children, className = "", id }) => (
+// Section Component (can be kept here or moved to a common components folder)
+export const Section = ({ children, className = "", id }) => (
   <section id={id} className={`section ${className}`}>
     <div className="section-container"> {children}</div>
   </section>
@@ -131,7 +132,6 @@ const Navbar = ({ theme, toggleTheme }) => {
               to="/"
               onClick={() => setIsMobileMenuOpen(false)}
               className="navbar-brand">
-              {/* Reverted to Code icon */}
               <Code size={28} className="navbar-brand-icon" />
               KUSHAL ARORA
             </Link>
@@ -183,522 +183,7 @@ const Navbar = ({ theme, toggleTheme }) => {
   );
 };
 
-// Enhanced HeroSection Component with Simplified Title
-const HeroSection = () => {
-  const heroRef = useRef(null);
-  const rotatingTexts = useMemo(
-    () => ["I'm a Frontend Developer", "I'm a Full Stack Developer"],
-    []
-  );
-
-  const [textArrayIndex, setTextArrayIndex] = useState(0);
-  const [charIndex, setCharIndex] = useState(0);
-  const [currentTypedText, setCurrentTypedText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const typingSpeed = 120;
-  const deletingSpeed = 60;
-  const pauseBeforeDelete = 2000;
-  const pauseBeforeTypingNext = 500;
-
-  useEffect(() => {
-    let typeTimer;
-    const currentPhraseToType = rotatingTexts[textArrayIndex];
-
-    if (isDeleting) {
-      if (charIndex > 0) {
-        typeTimer = setTimeout(() => {
-          setCurrentTypedText(currentPhraseToType.substring(0, charIndex - 1));
-          setCharIndex(charIndex - 1);
-        }, deletingSpeed);
-      } else {
-        setIsDeleting(false);
-        setTextArrayIndex(
-          (prevIndex) => (prevIndex + 1) % rotatingTexts.length
-        );
-        typeTimer = setTimeout(() => {}, pauseBeforeTypingNext);
-      }
-    } else {
-      if (charIndex < currentPhraseToType.length) {
-        typeTimer = setTimeout(() => {
-          setCurrentTypedText(currentPhraseToType.substring(0, charIndex + 1));
-          setCharIndex(charIndex + 1);
-        }, typingSpeed);
-      } else {
-        typeTimer = setTimeout(() => {
-          setIsDeleting(true);
-        }, pauseBeforeDelete);
-      }
-    }
-    return () => clearTimeout(typeTimer);
-  }, [
-    charIndex,
-    isDeleting,
-    textArrayIndex,
-    rotatingTexts,
-    typingSpeed,
-    deletingSpeed,
-    pauseBeforeDelete,
-    pauseBeforeTypingNext,
-  ]);
-
-  useEffect(() => {
-    const handleMouseMove = (event) => {
-      if (
-        !heroRef.current ||
-        !window.matchMedia("(prefers-reduced-motion: no-preference)").matches
-      )
-        return;
-      const { clientX, clientY } = event;
-      const { offsetWidth, offsetHeight } = heroRef.current;
-      const xPos = (clientX / offsetWidth - 0.5) * 30;
-      const yPos = (clientY / offsetHeight - 0.5) * 30;
-      const shapes = heroRef.current.querySelectorAll(".hero-bg-shape");
-      shapes.forEach((shape, index) => {
-        const factor = (index + 1) * 0.2 + 1;
-        shape.style.transform = `translate(${xPos / factor}px, ${
-          yPos / factor
-        }px)`;
-      });
-    };
-    const currentHeroRef = heroRef.current;
-    currentHeroRef?.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      currentHeroRef?.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []);
-
-  return (
-    <div className="hero-section" ref={heroRef}>
-      <Sparkles size={80} className="hero-bg-shape shape-1" />
-      <Sparkles size={50} className="hero-bg-shape shape-2" />
-      <Sparkles size={60} className="hero-bg-shape shape-3" />
-      <div className="hero-content">
-        {/* ✨ SIMPLIFIED HERO TITLE - Animation class added for consistency ✨ */}
-        <h1 className="section-title animate-fadeInUp">
-          WELCOME TO MY PORTFOLIO
-        </h1>
-
-        <p
-          className="hero-rotating-text"
-          style={{ animationDelay: "0.8s" }}
-          aria-live="polite"
-          aria-label={`Role: ${currentTypedText}`}>
-          {currentTypedText}
-          <span className="typing-cursor" aria-hidden="true"></span>
-        </p>
-
-        <p
-          className="hero-subtitle animate-fadeInUp"
-          style={{ animationDelay: "1.2s" }}>
-          I'm a passionate developer creating modern and interactive web
-          experiences. Explore my work and get to know me better.
-        </p>
-        <div
-          className="hero-buttons animate-fadeInUp"
-          style={{ animationDelay: "1.7s" }}>
-          <Link
-            to="/projects"
-            className="button button-primary hero-button-work">
-            View My Work
-          </Link>
-          <Link
-            to="/contact"
-            className="button button-secondary hero-button-contact">
-            Get In Touch
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// HomePage Component
-const HomePage = () => (
-  <div>
-    <HeroSection />
-    <Section className="home-services-section" id="services">
-      <h2 className="section-title animate-fadeInUp">What I Do</h2>
-      <div className="services-grid stagger-children">
-        {[
-          {
-            icon: Briefcase,
-            title: "Web Development",
-            desc: "Crafting responsive and dynamic websites using modern technologies.",
-            animClass: "animate-zoomIn stagger-delay-1",
-          },
-          {
-            icon: User,
-            title: "UI/UX Design",
-            desc: "Designing intuitive and engaging user interfaces with a focus on user experience.",
-            animClass: "animate-zoomIn stagger-delay-2",
-          },
-          {
-            icon: Briefcase,
-            title: "Interactive Experiences",
-            desc: "Building interactive elements and animations to bring designs to life.",
-            animClass: "animate-zoomIn stagger-delay-3",
-          },
-        ].map((service) => (
-          <div
-            className={`service-card ${service.animClass}`}
-            key={service.title}>
-            <service.icon size={48} className="service-card-icon" />
-            <h3 className="service-card-title">{service.title}</h3>
-            <p className="service-card-description">{service.desc}</p>
-          </div>
-        ))}
-      </div>
-    </Section>
-  </div>
-);
-
-// ProjectCard, ProjectsPage, AboutPage, ContactPage, Footer, ScrollToTopButton components (remain unchanged)
-// ... (Assume these components are here and correct as per your last version)
-const ProjectCard = ({
-  title,
-  description,
-  imageUrl,
-  techStack,
-  liveLink,
-  repoLink,
-  animationClass = "",
-}) => (
-  <div className={`project-card ${animationClass}`}>
-    <div className="project-card-image-container">
-      <img
-        src={
-          imageUrl ||
-          `https://placehold.co/600x400/1e293b/94a3b8?text=${encodeURIComponent(
-            title
-          )}`
-        }
-        alt={title}
-        className="project-card-image"
-        onError={(e) => {
-          e.target.src = `https://placehold.co/600x400/1e293b/94a3b8?text=Image+Error`;
-        }}
-        loading="lazy"
-      />
-    </div>
-    <div className="project-card-content">
-      <h3 className="project-card-title">{title}</h3>
-      <p className="project-card-description">{description}</p>
-      <div className="project-card-tech-stack-section">
-        <h4 className="project-card-tech-stack-heading">Tech Stack:</h4>
-        <div className="tech-stack-list">
-          {techStack.map((tech) => (
-            <span key={tech} className="tech-stack-item">
-              {tech}
-            </span>
-          ))}
-        </div>
-      </div>
-      <div className="project-card-links">
-        {liveLink && (
-          <a
-            href={liveLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="project-card-link project-card-link-live">
-            Live Demo <HomeIcon size={16} className="link-icon" />
-          </a>
-        )}
-        {repoLink && (
-          <a
-            href={repoLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="project-card-link project-card-link-repo">
-            <Github size={16} className="link-icon-leading" /> Code
-          </a>
-        )}
-      </div>
-    </div>
-  </div>
-);
-
-const ProjectsPage = () => {
-  const projects = [
-    {
-      title: "PORTFOLIO WEBSITE",
-      description:
-        "A portfolio website is like an online résumé. Potential clients and hiring managers can easily find you online and check your previous projects and skills",
-      imageUrl:
-        "https://images.unsplash.com/photo-1522199755839-a2bacb67c546?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGUtY29tbWVyY2V8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-      techStack: ["React", "Node.js", "Express", "MongoDB"],
-      liveLink: "#",
-      repoLink: "https://github.com/Kushal1907/my-portfolio-app",
-    },
-    {
-      title: "MERN CHAT APP",
-      description: "Web Application to chat online with friends.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1517048676732-d65bc937f952?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8dGFzayUyMG1hbmFnZW1lbnR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-      techStack: ["MongoDB", "Express", "React", "Node.js"],
-      liveLink: "https://github.com/Kushal1907/Mern-Chat-App",
-      repoLink: "https://github.com/Kushal1907/Mern-Chat-App",
-    },
-    {
-      title: "SIGN LANGUAGE TO TEXT AND SPEECH CONVERSION ",
-      description:
-        "A website where users may converse, exchange information, and create web content. ",
-      imageUrl:
-        "https://images.unsplash.com/photo-1487017159836-4e23ece2e4cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8cG9ydGZvbGlvfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
-      techStack: ["AI", "Machine Learning", "Python"],
-      liveLink: "https://github.com/Kushal1907/SIGN-LANGUAGE-CONVERTOR",
-      repoLink: "https://github.com/Kushal1907/SIGN-LANGUAGE-CONVERTOR",
-    },
-    {
-      title: "STUDENT DATABASE MANAGEMENT SYSTEM ",
-      description:
-        "Student database management system manages attendance, administrative, and other major website controls.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZGF0YSUyMHZpc3VhbGl6YXRpb258ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-      techStack: ["HTML5", "CSS3", "JS", "REACT", "Node.js", "SQL"],
-      liveLink:
-        "https://github.com/Kushal1907/Student-Database-Management-System",
-      repoLink:
-        "https://github.com/Kushal1907/Student-Database-Management-System",
-    },
-  ];
-  return (
-    <Section id="projects" className="projects-section">
-      <h2 className="section-title animate-fadeInUp">My Work & Projects</h2>
-      <div className="projects-grid stagger-children">
-        {projects.map((project, index) => (
-          <ProjectCard
-            key={project.title}
-            {...project}
-            animationClass={`animate-zoomIn stagger-delay-${
-              (index % projects.length) + 1
-            }`}
-          />
-        ))}
-      </div>
-    </Section>
-  );
-};
-
-const AboutPage = () => {
-  const initialBio = `Hello! I'm <strong>Kushal Arora</strong>, a passionate and <strong>Creative Frontend Developer</strong> based in The Digital Realm.<br/>I thrive on turning complex problems into elegant, user-friendly solutions. My journey in web development started with a fascination for how interactive digital experiences are built, and it has grown into a deep-seated passion.<br/>I specialize in React, Node.js, and modern JavaScript frameworks. I'm always eager to learn new technologies and methodologies to enhance my skill set and deliver cutting-edge results.<br/>When I'm not coding, you can find me exploring new tech, reading books, or working on personal creative projects.`;
-  const skills = [
-    "React",
-    "JavaScript (ES6+)",
-    "Node.js & Express",
-    "MongoDB & SQL",
-    "HTML5 & CSS3",
-    "TailwindCSS",
-    "Git & GitHub Actions",
-    "UI/UX Principles",
-    "Responsive Design",
-  ];
-  const fallbackPhotoUrl =
-    "https://placehold.co/400x480/1e293b/94a3b8?text=Kushal+Arora";
-  return (
-    <Section id="about" className="about-section">
-      <h2 className="section-title animate-fadeInUp">About Me</h2>
-      <div className="about-grid">
-        <div className="about-image-container animate-fadeInLeft stagger-delay-1">
-          <img
-            src={profilePhotoFromFile || fallbackPhotoUrl}
-            alt="Kushal Arora, a creative frontend developer."
-            className="about-image"
-            onError={(e) => {
-              e.target.src = `https://placehold.co/400x480/1e293b/94a3b8?text=Photo+Error`;
-            }}
-            loading="lazy"
-          />
-        </div>
-        <div className="about-text-content animate-fadeInRight stagger-delay-2">
-          <div
-            className="about-bio"
-            dangerouslySetInnerHTML={{ __html: initialBio }}
-          />
-          <h3 className="about-skills-title">My Skills</h3>
-          <div className="skills-list stagger-children">
-            {skills.map((skill, index) => (
-              <span
-                key={skill}
-                className={`skill-item animate-fadeInUp stagger-delay-${
-                  (index % 6) + 1
-                }`}>
-                {skill}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </Section>
-  );
-};
-
-const ContactPage = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
-  const [isSending, setIsSending] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState("success");
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSending(true);
-    setShowToast(false);
-    try {
-      const response = await sendContactMessage(formData);
-      const successMessage =
-        response.data.msg ||
-        "Message sent successfully! I'll be in touch soon.";
-      setToastType("success");
-      setToastMessage(successMessage);
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 4000);
-      setFormData({ name: "", email: "", message: "" });
-    } catch (err) {
-      console.error(
-        "Contact form submission error:",
-        err.response || err.message || err
-      );
-      const errorMessage =
-        err.response?.data?.msg ||
-        "Oops! Something went wrong. Please try again.";
-      setToastType("error");
-      setToastMessage(errorMessage);
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 6000);
-    }
-    setIsSending(false);
-  };
-  return (
-    <>
-      {showToast && (
-        <div
-          className={`toast-notification show ${toastType}`}
-          role={toastType === "error" ? "alert" : "status"}>
-          {toastType === "success" ? (
-            <CheckCircle size={20} className="toast-icon" />
-          ) : (
-            <XCircle size={20} className="toast-icon" />
-          )}
-          {toastMessage}
-          <button
-            onClick={() => setShowToast(false)}
-            className="toast-close-button"
-            aria-label="Close notification">
-            <X size={18} />
-          </button>
-        </div>
-      )}
-      <Section id="contact" className="contact-section">
-        <h2 className="section-title animate-fadeInUp">Get In Touch</h2>
-        <div className="contact-content-grid animate-fadeInUp stagger-delay-1">
-          <div className="contact-details">
-            <h3 className="contact-details-heading">Reach Me Directly</h3>
-            <p
-              className="contact-intro-text"
-              style={{ textAlign: "left", marginBottom: "1.5rem" }}>
-              I'm always open to discussing new projects, creative ideas, or
-              opportunities. Feel free to reach out via email or phone.
-            </p>
-            <ul className="contact-info-list">
-              <li>
-                <Mail size={20} className="contact-info-icon" />
-                <a href="mailto:kusharora19072001@gmail.com">
-                  kusharora19072001@gmail.com
-                </a>
-              </li>
-              <li>
-                <Phone size={20} className="contact-info-icon" />
-                <a href="tel:+919817864314">+91 9817864314</a>
-              </li>
-              <li>
-                <MapPin size={20} className="contact-info-icon" />
-                <span>Ambala, Haryana, India</span>
-              </li>
-            </ul>
-            <p className="contact-page-form-cta">
-              Or, use the form to send a message:
-            </p>
-          </div>
-          <div className="contact-form-wrapper">
-            <div className="contact-form-container">
-              <form className="contact-form" onSubmit={handleSubmit}>
-                <div className="form-group animate-fadeInUp stagger-delay-2">
-                  <label htmlFor="name" className="form-label">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    className="form-input"
-                    placeholder="Your Name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group animate-fadeInUp stagger-delay-3">
-                  <label htmlFor="email" className="form-label">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    className="form-input"
-                    placeholder="you@example.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="form-group animate-fadeInUp stagger-delay-4">
-                  <label htmlFor="message" className="form-label">
-                    Message
-                  </label>
-                  <textarea
-                    name="message"
-                    id="message"
-                    rows="5"
-                    className="form-textarea"
-                    placeholder="Let's build something amazing..."
-                    value={formData.message}
-                    onChange={handleChange}
-                    required></textarea>
-                </div>
-                <div className="animate-fadeInUp stagger-delay-5">
-                  <button
-                    type="submit"
-                    className={`button button-submit contact-submit-button ${
-                      isSending ? "sending" : ""
-                    }`}
-                    disabled={isSending}>
-                    {isSending ? (
-                      <Loader2
-                        size={20}
-                        className="animate-spin button-icon-leading"
-                      />
-                    ) : (
-                      <Send size={20} className="button-icon-leading" />
-                    )}
-                    {isSending ? "Sending..." : "Send Message"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </Section>
-    </>
-  );
-};
-
+// Footer Component
 const Footer = () => (
   <footer className="footer animate-fadeInUp">
     <div className="footer-container">
@@ -743,6 +228,7 @@ const Footer = () => (
   </footer>
 );
 
+// ScrollToTopButton Component
 const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
   const toggleVisibility = useCallback(() => {
@@ -766,6 +252,23 @@ const ScrollToTopButton = () => {
   );
 };
 
+// Loading Fallback Component for Suspense
+const PageLoader = () => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "calc(100vh - 4.5rem)",
+      color: "var(--text-primary)",
+    }}>
+    <Loader2 size={48} className="animate-spin" />
+    <span style={{ marginLeft: "1rem", fontSize: "1.2rem" }}>
+      Loading Page...
+    </span>
+  </div>
+);
+
 // Main App Component
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -788,30 +291,32 @@ function App() {
       <ScrollToTop />
       <Navbar theme={theme} toggleTheme={toggleTheme} />
       <main id="main-content" className="main-content">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route
-            path="*"
-            element={
-              <Section
-                id="not-found"
-                className="not-found-section"
-                style={{ textAlign: "center", padding: "5rem 1rem" }}>
-                <h2>404 - Page Not Found</h2>
-                <p>The page you are looking for does not exist.</p>
-                <Link
-                  to="/"
-                  className="button button-primary"
-                  style={{ marginTop: "1.5rem" }}>
-                  Go to Homepage
-                </Link>
-              </Section>
-            }
-          />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/projects" element={<ProjectsPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route
+              path="*"
+              element={
+                <Section
+                  id="not-found"
+                  className="not-found-section"
+                  style={{ textAlign: "center", padding: "5rem 1rem" }}>
+                  <h2>404 - Page Not Found</h2>
+                  <p>The page you are looking for does not exist.</p>
+                  <Link
+                    to="/"
+                    className="button button-primary"
+                    style={{ marginTop: "1.5rem" }}>
+                    Go to Homepage
+                  </Link>
+                </Section>
+              }
+            />
+          </Routes>
+        </Suspense>
       </main>
       <Footer />
       <ScrollToTopButton />
